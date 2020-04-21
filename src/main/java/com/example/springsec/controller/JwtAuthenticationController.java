@@ -11,10 +11,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -32,19 +34,41 @@ public class JwtAuthenticationController {
 
 
     @PostMapping(value = "/authenticate")
-    public ResponseEntity<?> getAuthenticationToken(@RequestBody JwtRequest request){
+    public Object getAuthenticationToken(@RequestBody JwtRequest request){
 
+        Map<String, Object> map = new HashMap<>();
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
         }catch (BadCredentialsException e){
-            throw new UsernameNotFoundException("User not found");
+            map.put("message", "Oups!!! user or password incorrect");
+            map.put("status", false);
+
+            return map;
         }
 
         UserDetails userDetails = userDetailService.loadUserByUsername(request.getUsername());
         String token = jwtUtil.generateToken(userDetails);
 
-        return ResponseEntity.ok(new JwtResponse(token));
+        map.put("jwt",new JwtResponse(token).getJwt());
+        map.put("message","user authenticated");
+        map.put("status", true);
 
+        return map;
+
+    }
+
+    @GetMapping(value = "/403")
+    public Object accesssDenied(Principal user) {
+        Map<String, Object> json = new HashMap();
+
+        json.put("status", "403 Forbidden");
+        if (user != null) {
+            json.put("message","Hi " + user.getName() + ", you do not have permission to access this page!");
+        } else {
+            json.put("message",
+                    "You do not have permission to access this page!");
+        }
+        return json;
     }
 }
