@@ -25,7 +25,6 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     UserServices userDetailsService;
 
-
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     @Autowired
@@ -33,7 +32,7 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService);
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
 
     @Override
@@ -41,7 +40,10 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
         // We don't need CSRF for this example
         httpSecurity.csrf().disable()
 // dont authenticate this particular request
-                .authorizeRequests().antMatchers("/authenticate").permitAll().
+                .authorizeRequests()
+                .antMatchers("/authenticate").permitAll()
+                .antMatchers("/getUsers").permitAll()
+                .antMatchers("/signup").permitAll().
 // all other requests need to be authenticated
         anyRequest().authenticated()
                 .and()
@@ -63,7 +65,7 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public PasswordEncoder getPasswordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return NoOpPasswordEncoder.getInstance();
     }
 }
