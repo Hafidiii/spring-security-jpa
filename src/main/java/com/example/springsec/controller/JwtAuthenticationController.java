@@ -17,7 +17,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -109,20 +108,6 @@ public class JwtAuthenticationController {
         } else {
             json.put(Constants.MESSAGE,
                     "You do not have permission to access this page!");
-        }
-        return json;
-    }
-
-
-    @GetMapping(value = "/getUsers")
-    public Object getUsers(@RequestParam String username) {
-        Map<String, Object> json = new HashMap();
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
-
-        if (user == null) {
-            json.put("error", "no user matched with -> " + username);
-        } else {
-            json.put("user", user);
         }
         return json;
     }
