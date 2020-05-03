@@ -4,6 +4,6 @@ node {
         }
 
         stage('build') {
-                sh 'mvn package'
+                bat 'mvn clean install'
         }
 }
